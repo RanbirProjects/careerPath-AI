@@ -15,12 +15,14 @@ import {
   LinearProgress,
   Chip,
   Stack,
+  Skeleton,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
   School as SchoolIcon,
   Work as WorkIcon,
   Star as StarIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import CareerPathCard from './CareerPathCard';
@@ -64,7 +66,7 @@ const LoadingOverlay = styled(Box)(({ theme }) => ({
   zIndex: theme.zIndex.modal,
 }));
 
-const StatsCard = ({ title, value, icon: Icon, color }) => (
+const StatsCard = ({ title, value, icon: Icon, color, loading }) => (
   <Paper
     elevation={3}
     sx={{
@@ -93,14 +95,18 @@ const StatsCard = ({ title, value, icon: Icon, color }) => (
         {title}
       </Typography>
     </Box>
-    <Typography variant="h4" component="p" sx={{ mt: 2 }}>
-      {value}
-    </Typography>
+    {loading ? (
+      <Skeleton variant="text" width="60%" height={40} />
+    ) : (
+      <Typography variant="h4" component="p" sx={{ mt: 2 }}>
+        {value}
+      </Typography>
+    )}
   </Paper>
 );
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [careerPaths, setCareerPaths] = useState([]);
@@ -111,48 +117,40 @@ const Dashboard = () => {
     recommendations: 0,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Fetch user profile data
-        const profileResponse = await axios.get('/api/profile/me');
-        const profileData = profileResponse.data;
+      console.log('Fetching dashboard data...');
+      const response = await axios.get('/api/profile/dashboard');
+      console.log('Dashboard data received:', response.data);
 
-        // Fetch skills data
-        const skillsResponse = await axios.get('/api/skills');
-        const skillsData = skillsResponse.data;
-
-        // Fetch education data
-        const educationResponse = await axios.get('/api/education');
-        const educationData = educationResponse.data;
-
-        // Fetch experience data
-        const experienceResponse = await axios.get('/api/experience');
-        const experienceData = experienceResponse.data;
-
-        // Update stats
-        setStats({
-          skills: skillsData.length || 0,
-          education: educationData.length || 0,
-          experience: experienceData.length || 0,
-          recommendations: profileData.recommendations?.length || 0,
-        });
-
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
-      } finally {
-        setLoading(false);
+      const { profile } = response.data;
+      if (!profile) {
+        throw new Error('No profile data received');
       }
-    };
 
-    if (user) {
-      fetchData();
+      setStats({
+        skills: profile.skills?.length || 0,
+        education: profile.education?.length || 0,
+        experience: profile.experience?.length || 0,
+        recommendations: profile.recommendations?.length || 0,
+      });
+
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err.response?.data?.message || 'Failed to load dashboard data. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchDashboardData();
+    }
+  }, [isAuthenticated, user]);
 
   const welcomeSection = useMemo(() => (
     <Grid item xs={12}>
@@ -184,6 +182,7 @@ const Dashboard = () => {
           value={stats.skills}
           icon={TrendingUpIcon}
           color="#2196f3"
+          loading={loading}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -192,6 +191,7 @@ const Dashboard = () => {
           value={stats.education}
           icon={SchoolIcon}
           color="#4caf50"
+          loading={loading}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -200,6 +200,7 @@ const Dashboard = () => {
           value={stats.experience}
           icon={WorkIcon}
           color="#ff9800"
+          loading={loading}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -208,10 +209,11 @@ const Dashboard = () => {
           value={stats.recommendations}
           icon={StarIcon}
           color="#f44336"
+          loading={loading}
         />
       </Grid>
     </Grid>
-  ), [stats]);
+  ), [stats, loading]);
 
   const featuredCareerPath = useMemo(() => (
     <Grid item xs={12} md={8}>
@@ -264,18 +266,30 @@ const Dashboard = () => {
     </Grid>
   ), [careerPaths]);
 
-  if (loading) {
+  if (!isAuthenticated) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="warning">
+          Please log in to view your dashboard.
+        </Alert>
+      </Container>
     );
   }
 
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert 
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={fetchDashboardData}>
+              <RefreshIcon sx={{ mr: 1 }} />
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       </Container>
     );
   }
@@ -299,9 +313,17 @@ const Dashboard = () => {
           Recent Activity
         </Typography>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="body1" color="text.secondary">
-            No recent activity to display.
-          </Typography>
+          {loading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Skeleton variant="text" width="80%" />
+              <Skeleton variant="text" width="60%" />
+              <Skeleton variant="text" width="40%" />
+            </Box>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No recent activity to display.
+            </Typography>
+          )}
         </Paper>
       </Box>
 
