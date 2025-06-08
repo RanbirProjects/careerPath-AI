@@ -2,18 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box } from '@mui/material';
-import Header from './components/layout/Header';
-import Home from './components/pages/Home';
-import Dashboard from './components/dashboard/Dashboard';
-import Profile from './components/profile/Profile';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import { AuthProvider } from './context/AuthContext';
-import { styled } from '@mui/material/styles';
+import Dashboard from './components/dashboard/Dashboard';
 import EnhancedProfile from './components/profile/EnhancedProfile';
 import Navbar from './components/layout/Navbar';
-import { useAuth } from './context/AuthContext';
+import Home from './components/home/Home';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { styled } from '@mui/material/styles';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {

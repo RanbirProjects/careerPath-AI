@@ -3,27 +3,20 @@ import {
   Container,
   Paper,
   Typography,
+  Box,
   TextField,
   Button,
-  Box,
   Grid,
   Avatar,
   IconButton,
   Chip,
-  Divider,
+  Stack,
   Alert,
   CircularProgress,
 } from '@mui/material';
-import {
-  PhotoCamera,
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  LinkedIn,
-  GitHub,
-  Twitter,
-  Language,
-} from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
+import { styled } from '@mui/material/styles';
+import { PhotoCamera as PhotoCameraIcon } from '@mui/icons-material';
+import { useAuth } from '../../contexts/AuthContext';
 
 const EnhancedProfile = () => {
   const { user, updateProfile } = useAuth();
@@ -146,7 +139,7 @@ const EnhancedProfile = () => {
               />
               <label htmlFor="photo-upload">
                 <IconButton component="span" color="primary">
-                  <PhotoCamera />
+                  <PhotoCameraIcon />
                 </IconButton>
               </label>
               <Avatar

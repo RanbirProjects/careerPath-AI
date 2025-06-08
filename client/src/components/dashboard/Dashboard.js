@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -7,10 +8,11 @@ import {
   Box,
   CircularProgress,
   Alert,
+  Button,
   Card,
   CardContent,
   CardMedia,
-  Button,
+  LinearProgress,
   Chip,
   Stack,
 } from '@mui/material';
@@ -20,11 +22,9 @@ import {
   Work as WorkIcon,
   Star as StarIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
-import CareerPathCard from './CareerPathCard';
-import ProfileForm from './ProfileForm';
+import { useAuth } from '../../contexts/AuthContext';
 import { styled } from '@mui/material/styles';
+import CareerPathCard from './CareerPathCard';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
