@@ -25,6 +25,7 @@ import {
 import { styled } from '@mui/material/styles';
 import CareerPathCard from './CareerPathCard';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -63,20 +64,39 @@ const LoadingOverlay = styled(Box)(({ theme }) => ({
   zIndex: theme.zIndex.modal,
 }));
 
-const StatsCard = ({ title, value, icon: Icon }) => (
-  <StyledCard>
-    <CardContent>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Icon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-        <Typography variant="h6" component="div">
-          {title}
-        </Typography>
-      </Box>
-      <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-        {value}
+const StatsCard = ({ title, value, icon: Icon, color }) => (
+  <Paper
+    elevation={3}
+    sx={{
+      p: 3,
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+  >
+    <Box
+      sx={{
+        position: 'absolute',
+        top: -20,
+        right: -20,
+        opacity: 0.1,
+        transform: 'rotate(30deg)',
+      }}
+    >
+      <Icon sx={{ fontSize: 100, color: color }} />
+    </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      <Icon sx={{ fontSize: 40, color: color, mr: 2 }} />
+      <Typography variant="h6" component="h2">
+        {title}
       </Typography>
-    </CardContent>
-  </StyledCard>
+    </Box>
+    <Typography variant="h4" component="p" sx={{ mt: 2 }}>
+      {value}
+    </Typography>
+  </Paper>
 );
 
 const Dashboard = () => {
@@ -85,67 +105,54 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [careerPaths, setCareerPaths] = useState([]);
   const [stats, setStats] = useState({
-    completedCourses: 0,
-    skillsAcquired: 0,
-    certifications: 0,
+    skills: 0,
+    education: 0,
+    experience: 0,
+    recommendations: 0,
   });
 
-  const fetchData = useMemo(async () => {
-    try {
-      setLoading(true);
-      // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockCareerPaths = [
-        {
-          id: 1,
-          title: 'Full Stack Developer',
-          description: 'Master web development from frontend to backend',
-          image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-1.2.1&auto=format&fit=crop&w=1352&q=80',
-          progress: 65,
-          skills: ['React', 'Node.js', 'MongoDB'],
-          duration: '6 months',
-        },
-        {
-          id: 2,
-          title: 'Data Scientist',
-          description: 'Learn data analysis and machine learning',
-          image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-          progress: 30,
-          skills: ['Python', 'TensorFlow', 'Data Analysis'],
-          duration: '8 months',
-        },
-        {
-          id: 3,
-          title: 'UX/UI Designer',
-          description: 'Create beautiful and functional user interfaces',
-          image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-          progress: 45,
-          skills: ['Figma', 'User Research', 'Prototyping'],
-          duration: '4 months',
-        },
-      ];
-
-      const mockStats = {
-        completedCourses: 12,
-        skillsAcquired: 24,
-        certifications: 5,
-      };
-
-      setCareerPaths(mockCareerPaths);
-      setStats(mockStats);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load dashboard data');
-      console.error('Error loading dashboard:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch user profile data
+        const profileResponse = await axios.get('/api/profile/me');
+        const profileData = profileResponse.data;
+
+        // Fetch skills data
+        const skillsResponse = await axios.get('/api/skills');
+        const skillsData = skillsResponse.data;
+
+        // Fetch education data
+        const educationResponse = await axios.get('/api/education');
+        const educationData = educationResponse.data;
+
+        // Fetch experience data
+        const experienceResponse = await axios.get('/api/experience');
+        const experienceData = experienceResponse.data;
+
+        // Update stats
+        setStats({
+          skills: skillsData.length || 0,
+          education: educationData.length || 0,
+          experience: experienceData.length || 0,
+          recommendations: profileData.recommendations?.length || 0,
+        });
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const welcomeSection = useMemo(() => (
     <Grid item xs={12}>
@@ -171,25 +178,36 @@ const Dashboard = () => {
 
   const statsSection = useMemo(() => (
     <Grid container spacing={3} sx={{ mb: 4 }}>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} sm={6} md={3}>
         <StatsCard
-          title="Career Paths"
-          value={stats.completedCourses}
-          icon={WorkIcon}
+          title="Skills"
+          value={stats.skills}
+          icon={TrendingUpIcon}
+          color="#2196f3"
         />
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} sm={6} md={3}>
         <StatsCard
-          title="Skills Learned"
-          value={stats.skillsAcquired}
+          title="Education"
+          value={stats.education}
           icon={SchoolIcon}
+          color="#4caf50"
         />
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} sm={6} md={3}>
         <StatsCard
-          title="Achievements"
-          value={stats.certifications}
+          title="Experience"
+          value={stats.experience}
+          icon={WorkIcon}
+          color="#ff9800"
+        />
+      </Grid>
+      <Grid item xs={12} sm={6} md={3}>
+        <StatsCard
+          title="Recommendations"
+          value={stats.recommendations}
           icon={StarIcon}
+          color="#f44336"
         />
       </Grid>
     </Grid>
@@ -246,25 +264,48 @@ const Dashboard = () => {
     </Grid>
   ), [careerPaths]);
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   if (error) {
     return (
-      <Container>
-        <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {loading && (
-        <LoadingOverlay>
-          <CircularProgress size={60} />
-        </LoadingOverlay>
-      )}
-      
-      <Grid container spacing={4}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Welcome, {user?.name || 'User'}!
+      </Typography>
+      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+        Here's an overview of your career profile
+      </Typography>
+
+      <Grid container spacing={3} sx={{ mt: 2 }}>
         {welcomeSection}
         {statsSection}
+      </Grid>
+
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Recent Activity
+        </Typography>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="body1" color="text.secondary">
+            No recent activity to display.
+          </Typography>
+        </Paper>
+      </Box>
+
+      <Grid container spacing={4}>
         {featuredCareerPath}
         {careerPathsGrid}
       </Grid>
