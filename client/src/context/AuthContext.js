@@ -16,75 +16,71 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Check if user is already logged in
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      loadUser();
+      fetchUserData();
     } else {
       setLoading(false);
     }
   }, []);
 
-  const loadUser = async () => {
+  const fetchUserData = async () => {
     try {
-      const res = await axios.get('/api/auth/user');
-      setUser(res.data);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading user:', err);
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
-      setError(err.response?.data?.msg || 'Error loading user data');
-    }
-    setLoading(false);
-  };
-
-  const register = async (name, email, password) => {
-    try {
-      setError(null);
-      const res = await axios.post('/api/auth/register', {
-        name,
-        email,
-        password,
-      });
-      const { token } = res.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await loadUser();
-      return res.data;
-    } catch (err) {
-      console.error('Registration error:', err);
-      const errorMessage = err.response?.data?.msg || 
-        err.response?.data?.errors?.[0]?.msg || 
-        'Registration failed. Please try again.';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      const response = await axios.get('/api/auth/me');
+      setUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      logout();
+    } finally {
+      setLoading(false);
     }
   };
 
   const login = async (email, password) => {
     try {
-      setError(null);
-      const res = await axios.post('/api/auth/login', {
-        email,
-        password,
-      });
-      const { token } = res.data;
+      const response = await axios.post('/api/auth/login', { email, password });
+      const { token, user } = response.data;
+      
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await loadUser();
-      return res.data;
-    } catch (err) {
-      console.error('Login error:', err);
-      const errorMessage = err.response?.data?.msg || 
-        err.response?.data?.errors?.[0]?.msg || 
-        'Login failed. Please check your credentials.';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      
+      setUser(user);
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login failed. Please try again.'
+      };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await axios.post('/api/auth/register', userData);
+      const { token, user } = response.data;
+      
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      setUser(user);
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Registration failed. Please try again.'
+      };
     }
   };
 
@@ -92,7 +88,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
-    setError(null);
+    setIsAuthenticated(false);
   };
 
   const updateProfile = async (profileData) => {
@@ -113,10 +109,11 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    isAuthenticated,
     loading,
     error,
-    register,
     login,
+    register,
     logout,
     updateProfile,
   };

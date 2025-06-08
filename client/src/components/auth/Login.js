@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
-  Paper,
+  Box,
   Typography,
   TextField,
   Button,
-  Box,
+  Link,
+  Paper,
   Alert,
-  CircularProgress,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
@@ -27,8 +27,6 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
-    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -36,70 +34,88 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    // Validate form
-    if (!formData.email || !formData.password) {
-      setError('All fields are required');
-      setLoading(false);
-      return;
-    }
-
     try {
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error);
+      }
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center">
-            Login
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Sign in
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
               {error}
             </Alert>
           )}
-          <form onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
             <TextField
+              margin="normal"
+              required
               fullWidth
-              label="Email"
+              id="email"
+              label="Email Address"
               name="email"
-              type="email"
+              autoComplete="email"
+              autoFocus
               value={formData.email}
               onChange={handleChange}
-              margin="normal"
-              required
-              disabled={loading}
             />
             <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
               margin="normal"
               required
-              disabled={loading}
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              color="primary"
-              size="large"
-              sx={{ mt: 3 }}
+              sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Login'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-          </form>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link component={RouterLink} to="/register" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
+            </Box>
+          </Box>
         </Paper>
       </Box>
     </Container>
