@@ -24,7 +24,7 @@ import {
 import {
   Home as HomeIcon,
   Dashboard as DashboardIcon,
-  Person as PersonIcon,
+  Person as ProfileIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
   Notifications as NotificationsIcon,
@@ -34,37 +34,16 @@ import { useAuth } from '../../context/AuthContext';
 import { styled } from '@mui/material/styles';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(8px)',
-  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-  borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-  },
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
 }));
 
 const NavButton = styled(Button)(({ theme, active }) => ({
   color: active ? theme.palette.primary.main : theme.palette.text.primary,
   margin: theme.spacing(0, 1),
-  padding: theme.spacing(1, 2),
-  borderRadius: theme.spacing(2),
-  transition: 'all 0.3s ease',
-  position: 'relative',
   '&:hover': {
-    backgroundColor: 'rgba(25, 118, 210, 0.08)',
-    transform: 'translateY(-2px)',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: '50%',
-    transform: active ? 'translateX(-50%) scaleX(1)' : 'translateX(-50%) scaleX(0)',
-    width: '80%',
-    height: '2px',
-    backgroundColor: theme.palette.primary.main,
-    transition: 'transform 0.3s ease',
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
   },
 }));
 
@@ -101,16 +80,16 @@ const NotificationBadge = styled(Badge)(({ theme }) => ({
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const navItems = [
-    { path: '/', label: 'Home', icon: <HomeIcon /> },
-    { path: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-    { path: '/profile', label: 'Profile', icon: <PersonIcon /> },
+    { path: '/', label: 'Home', icon: HomeIcon },
+    { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+    { path: '/profile', label: 'Profile', icon: ProfileIcon },
   ];
 
   const handleMenu = (event) => {
@@ -123,8 +102,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
     handleClose();
+    navigate('/login');
   };
 
   const handleDrawerToggle = () => {
@@ -153,7 +132,7 @@ const Navbar = () => {
             }}
             selected={location.pathname === item.path}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemIcon>{<item.icon />}</ListItemIcon>
             <ListItemText primary={item.label} />
           </ListItem>
         ))}
@@ -168,101 +147,71 @@ const Navbar = () => {
   );
 
   return (
-    <StyledAppBar position="sticky">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Logo variant="h5" onClick={() => navigate('/')}>
-            CareerPath AI
-          </Logo>
+    <StyledAppBar position="fixed">
+      <Toolbar>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ flexGrow: 1, color: 'primary.main', fontWeight: 'bold' }}
+        >
+          CareerPath AI
+        </Typography>
 
-          {isMobile ? (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {isAuthenticated ? (
             <>
-              <Box sx={{ flexGrow: 1 }} />
+              {navItems.map((item) => (
+                <NavButton
+                  key={item.path}
+                  startIcon={<item.icon />}
+                  onClick={() => navigate(item.path)}
+                  active={location.pathname === item.path}
+                >
+                  {item.label}
+                </NavButton>
+              ))}
               <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
+                size="large"
+                onClick={handleMenu}
+                sx={{ ml: 2 }}
               >
-                <MenuIcon />
+                <Avatar
+                  alt={user?.name || 'User'}
+                  src={user?.avatar}
+                  sx={{ width: 32, height: 32 }}
+                />
               </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleLogout}>
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
             </>
           ) : (
             <>
-              <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
-                {navItems.map((item) => (
-                  <NavButton
-                    key={item.path}
-                    startIcon={item.icon}
-                    onClick={() => navigate(item.path)}
-                    active={location.pathname === item.path}
-                  >
-                    {item.label}
-                  </NavButton>
-                ))}
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <NotificationBadge badgeContent={3} color="secondary">
-                  <IconButton color="inherit">
-                    <NotificationsIcon />
-                  </IconButton>
-                </NotificationBadge>
-
-                <IconButton color="inherit">
-                  <SettingsIcon />
-                </IconButton>
-
-                <StyledAvatar
-                  src={user?.avatar}
-                  alt={user?.name}
-                  onClick={handleMenu}
-                >
-                  {user?.name?.charAt(0)}
-                </StyledAvatar>
-              </Box>
+              <NavButton
+                onClick={() => navigate('/login')}
+                active={location.pathname === '/login'}
+              >
+                Login
+              </NavButton>
+              <NavButton
+                onClick={() => navigate('/register')}
+                active={location.pathname === '/register'}
+                variant="contained"
+                color="primary"
+              >
+                Register
+              </NavButton>
             </>
           )}
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            PaperProps={{
-              elevation: 3,
-              sx: {
-                mt: 1.5,
-                minWidth: 200,
-                borderRadius: 2,
-                '& .MuiMenuItem-root': {
-                  px: 2,
-                  py: 1.5,
-                },
-              },
-            }}
-          >
-            <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>
-              <ListItemIcon>
-                <PersonIcon fontSize="small" />
-              </ListItemIcon>
-              Profile
-            </MenuItem>
-            <MenuItem onClick={() => { navigate('/settings'); handleClose(); }}>
-              <ListItemIcon>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
-              Settings
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </Container>
+        </Box>
+      </Toolbar>
 
       <Drawer
         variant="temporary"
