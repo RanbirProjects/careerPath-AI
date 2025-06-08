@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -16,15 +16,9 @@ import {
   Chip,
   Stack,
 } from '@mui/material';
-import {
-  TrendingUp as TrendingUpIcon,
-  School as SchoolIcon,
-  Work as WorkIcon,
-  Star as StarIcon,
-} from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
 import { styled } from '@mui/material/styles';
 import CareerPathCard from './CareerPathCard';
+import { useAuth } from '../../context/AuthContext';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -74,7 +68,7 @@ const Dashboard = () => {
     certifications: 0,
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useMemo(async () => {
     try {
       setLoading(true);
       // Simulated API call

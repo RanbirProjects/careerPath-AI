@@ -15,13 +15,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import {
-  PhotoCamera as PhotoCameraIcon,
-  LinkedIn,
-  GitHub,
-  Twitter,
-  Language,
-} from '@mui/icons-material';
+import { PhotoCamera as PhotoCameraIcon } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
 const EnhancedProfile = () => {
@@ -217,9 +211,6 @@ const EnhancedProfile = () => {
                     name="socialLinks.linkedin"
                     value={formData.socialLinks.linkedin}
                     onChange={handleChange}
-                    InputProps={{
-                      startAdornment: <LinkedIn sx={{ mr: 1 }} />,
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -229,9 +220,6 @@ const EnhancedProfile = () => {
                     name="socialLinks.github"
                     value={formData.socialLinks.github}
                     onChange={handleChange}
-                    InputProps={{
-                      startAdornment: <GitHub sx={{ mr: 1 }} />,
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -241,9 +229,6 @@ const EnhancedProfile = () => {
                     name="socialLinks.twitter"
                     value={formData.socialLinks.twitter}
                     onChange={handleChange}
-                    InputProps={{
-                      startAdornment: <Twitter sx={{ mr: 1 }} />,
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -253,9 +238,6 @@ const EnhancedProfile = () => {
                     name="socialLinks.portfolio"
                     value={formData.socialLinks.portfolio}
                     onChange={handleChange}
-                    InputProps={{
-                      startAdornment: <Language sx={{ mr: 1 }} />,
-                    }}
                   />
                 </Grid>
               </Grid>
