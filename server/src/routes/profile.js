@@ -3,6 +3,26 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Profile = require('../models/Profile');
 
+// @route   GET api/profile/dashboard
+// @desc    Get dashboard data for current user
+// @access  Private
+router.get('/dashboard', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+      .select('skills education experience recommendations')
+      .lean();
+    
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    res.json({ profile });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   GET api/profile/me
 // @desc    Get current user's profile
 // @access  Private
