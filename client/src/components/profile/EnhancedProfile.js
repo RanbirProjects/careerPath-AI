@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { PhotoCamera as PhotoCameraIcon } from '@mui/icons-material';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const EnhancedProfile = () => {
   const { user, updateProfile } = useAuth();

@@ -8,7 +8,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import EnhancedProfile from './components/profile/EnhancedProfile';
 import Navbar from './components/layout/Navbar';
 import Home from './components/home/Home';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { styled } from '@mui/material/styles';
 
 // Protected Route component

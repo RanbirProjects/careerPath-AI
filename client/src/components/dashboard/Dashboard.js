@@ -22,7 +22,7 @@ import {
   Work as WorkIcon,
   Star as StarIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { styled } from '@mui/material/styles';
 import CareerPathCard from './CareerPathCard';
 
