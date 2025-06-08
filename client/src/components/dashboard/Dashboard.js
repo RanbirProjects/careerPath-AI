@@ -16,6 +16,12 @@ import {
   Chip,
   Stack,
 } from '@mui/material';
+import {
+  TrendingUp as TrendingUpIcon,
+  School as SchoolIcon,
+  Work as WorkIcon,
+  Star as StarIcon,
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import CareerPathCard from './CareerPathCard';
 import { useAuth } from '../../context/AuthContext';
@@ -56,6 +62,22 @@ const LoadingOverlay = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   zIndex: theme.zIndex.modal,
 }));
+
+const StatsCard = ({ title, value, icon: Icon }) => (
+  <StyledCard>
+    <CardContent>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Icon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+        <Typography variant="h6" component="div">
+          {title}
+        </Typography>
+      </Box>
+      <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+        {value}
+      </Typography>
+    </CardContent>
+  </StyledCard>
+);
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -148,52 +170,28 @@ const Dashboard = () => {
   ), [user?.name]);
 
   const statsSection = useMemo(() => (
-    <Grid item xs={12} md={4}>
-      <StyledCard>
-        <CardMedia
-          component="img"
-          height="140"
-          image="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-          alt="Progress"
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid item xs={12} md={4}>
+        <StatsCard
+          title="Career Paths"
+          value={stats.completedCourses}
+          icon={WorkIcon}
         />
-        <ImageOverlay>
-          <Box>
-            <Typography variant="h6">Your Progress</Typography>
-            <Typography variant="body2">Track your learning journey</Typography>
-          </Box>
-        </ImageOverlay>
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <Box textAlign="center">
-                <TrendingUpIcon color="primary" />
-                <Typography variant="h6">{stats.completedCourses}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Courses
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={4}>
-              <Box textAlign="center">
-                <SchoolIcon color="primary" />
-                <Typography variant="h6">{stats.skillsAcquired}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Skills
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={4}>
-              <Box textAlign="center">
-                <StarIcon color="primary" />
-                <Typography variant="h6">{stats.certifications}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Certificates
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </StyledCard>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <StatsCard
+          title="Skills Learned"
+          value={stats.skillsAcquired}
+          icon={SchoolIcon}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <StatsCard
+          title="Achievements"
+          value={stats.certifications}
+          icon={StarIcon}
+        />
+      </Grid>
     </Grid>
   ), [stats]);
 
