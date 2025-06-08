@@ -15,7 +15,13 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { PhotoCamera as PhotoCameraIcon } from '@mui/icons-material';
+import {
+  PhotoCamera as PhotoCameraIcon,
+  LinkedIn,
+  GitHub,
+  Twitter,
+  Language,
+} from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
 const EnhancedProfile = () => {
